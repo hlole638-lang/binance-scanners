@@ -1,16 +1,30 @@
-from flask import Flask, render_template, jsonify
-from scanner import run_scan
+from flask import Flask, jsonify
 
 app = Flask(__name__)
 
 @app.route("/")
-def index():
-    return render_template("index.html")
+def home():
+    return "Scanner Working"
 
 @app.route("/scan/<timeframe>")
 def scan(timeframe):
-    results = run_scan(timeframe)
-    return jsonify(results)
+
+    data = [
+        {
+            "symbol": "BTCUSDT",
+            "price": 103000,
+            "rsi": 45,
+            "score": 80
+        },
+        {
+            "symbol": "ETHUSDT",
+            "price": 2500,
+            "rsi": 39,
+            "score": 75
+        }
+    ]
+
+    return jsonify(data)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000, debug=True)
+    app.run(host="0.0.0.0", port=3000)
