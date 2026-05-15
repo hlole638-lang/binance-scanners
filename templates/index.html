@@ -2,8 +2,12 @@
 <html lang="ar">
 
 <head>
+
     <meta charset="UTF-8">
-    <title>فلترة العملات</title>
+
+    <title>
+        Binance Scanner
+    </title>
 
     <style>
 
@@ -15,6 +19,20 @@
             padding:20px;
         }
 
+        h1{
+            margin-bottom:20px;
+        }
+
+        button{
+            padding:10px 20px;
+            cursor:pointer;
+            margin-right:10px;
+        }
+
+        select{
+            padding:10px;
+        }
+
         table{
             width:100%;
             border-collapse:collapse;
@@ -23,17 +41,12 @@
 
         th,td{
             border:1px solid #444;
-            padding:10px;
+            padding:12px;
             text-align:center;
         }
 
-        button{
-            padding:10px 20px;
-            cursor:pointer;
-        }
-
-        select{
-            padding:10px;
+        th{
+            background:#222;
         }
 
     </style>
@@ -42,13 +55,28 @@
 
 <body>
 
-    <h1>فلترة Binance Spot</h1>
+    <h1>
+        فلترة Binance Spot
+    </h1>
 
     <select id="timeframe">
-        <option value="15m">15m</option>
-        <option value="1h">1h</option>
-        <option value="4h">4h</option>
-        <option value="1d">1d</option>
+
+        <option value="15m">
+            15m
+        </option>
+
+        <option value="1h">
+            1h
+        </option>
+
+        <option value="4h">
+            4h
+        </option>
+
+        <option value="1d">
+            1d
+        </option>
+
     </select>
 
     <button onclick="scanCoins()">
@@ -60,10 +88,23 @@
         <thead>
 
             <tr>
-                <th>العملة</th>
-                <th>السعر</th>
-                <th>RSI</th>
-                <th>Score</th>
+
+                <th>
+                    العملة
+                </th>
+
+                <th>
+                    السعر
+                </th>
+
+                <th>
+                    RSI
+                </th>
+
+                <th>
+                    Score
+                </th>
+
             </tr>
 
         </thead>
@@ -99,10 +140,15 @@ async function scanCoins(){
         tbody.innerHTML += `
 
         <tr>
+
             <td>${item.symbol}</td>
+
             <td>${item.price}</td>
+
             <td>${item.rsi}</td>
+
             <td>${item.score}</td>
+
         </tr>
 
         `
