@@ -1,1 +1,38 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>فلترة العملات</title>
 
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <h1>فلترة العملات - Binance Spot</h1>
+
+    <select id="timeframe">
+        <option value="15m">15m</option>
+        <option value="1h">1h</option>
+        <option value="4h">4h</option>
+        <option value="1d">1d</option>
+    </select>
+
+    <button onclick="scan()">ابدأ الفحص</button>
+
+    <table>
+        <thead>
+            <tr>
+                <th>العملة</th>
+                <th>السعر</th>
+                <th>RSI</th>
+                <th>Score</th>
+            </tr>
+        </thead>
+
+        <tbody id="results"></tbody>
+    </table>
+
+    <script src="/static/app.js"></script>
+
+</body>
+</html>
