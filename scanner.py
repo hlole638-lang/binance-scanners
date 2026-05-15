@@ -3,6 +3,8 @@ import pandas as pd
 
 BASE_URL = "https://api.kucoin.com"
 
+# ---------------- RSI ---------------- #
+
 def calculate_rsi(df, period=14):
 
     delta = df["close"].diff()
@@ -19,6 +21,8 @@ def calculate_rsi(df, period=14):
 
     return rsi
 
+# ---------------- Candles ---------------- #
+
 def get_klines(symbol, timeframe):
 
     interval_map = {
@@ -28,7 +32,10 @@ def get_klines(symbol, timeframe):
         "1d": "1day"
     }
 
-    kucoin_tf = interval_map.get(timeframe, "1hour")
+    kucoin_tf = interval_map.get(
+        timeframe,
+        "1hour"
+    )
 
     url = (
         f"{BASE_URL}/api/v1/market/candles"
@@ -67,18 +74,86 @@ def get_klines(symbol, timeframe):
 
     df = pd.DataFrame(rows)
 
-    df = df[::-1]
+    df = df[::-1].reset_index(drop=True)
 
     return df
+
+# ---------------- Reversal Candle ---------------- #
+
+def bullish_reversal(df):
+
+    last = df.iloc[-1]
+
+    body = abs(
+        last["close"] - last["open"]
+    )
+
+    avg_body = abs(
+        df["close"] - df["open"]
+    ).rolling(3).mean().iloc[-2]
+
+    green = last["close"] > last["open"]
+
+    strong_body = body > avg_body
+
+    return green and strong_body
+
+# ---------------- Order Block ---------------- #
+
+def bullish_order_block(df):
+
+    if len(df) < 10:
+        return False
+
+    for i in range(-8, -2):
+
+        candle = df.iloc[i]
+
+        bearish = candle["close"] < candle["open"]
+
+        if not bearish:
+            continue
+
+        move = (
+            df.iloc[i + 1]["close"] -
+            candle["close"]
+        ) / candle["close"]
+
+        strong_move = move > 0.02
+
+        if strong_move:
+
+            ob_high = candle["open"]
+            ob_low = candle["low"]
+
+            current_price = df.iloc[-1]["close"]
+
+            inside_ob = (
+                ob_low <= current_price <= ob_high
+            )
+
+            if inside_ob:
+                return True
+
+    return False
+
+# ---------------- Main Scan ---------------- #
 
 def run_scan(interval):
 
     symbols = [
+
         "BTC-USDT",
         "ETH-USDT",
         "BNB-USDT",
         "SOL-USDT",
-        "XRP-USDT"
+        "XRP-USDT",
+        "DOGE-USDT",
+        "ADA-USDT",
+        "LINK-USDT",
+        "AVAX-USDT",
+        "DOT-USDT"
+
     ]
 
     results = []
@@ -87,7 +162,10 @@ def run_scan(interval):
 
         try:
 
-            df = get_klines(symbol, interval)
+            df = get_klines(
+                symbol,
+                interval
+            )
 
             if df is None:
                 continue
@@ -102,24 +180,58 @@ def run_scan(interval):
             if pd.isna(last_rsi):
                 continue
 
-            results.append({
+            reversal =
+                bullish_reversal(df)
 
-                "symbol": symbol,
-                "price": round(df.iloc[-1]["close"], 4),
-                "rsi": round(float(last_rsi), 2),
-                "score": round(100 - float(last_rsi), 2)
+            order_block =
+                bullish_order_block(df)
 
-            })
+            rsi_condition =
+                last_rsi < 32
+
+            score = 0
+
+            if rsi_condition:
+                score += 40
+
+            if reversal:
+                score += 30
+
+            if order_block:
+                score += 30
+
+            if score >= 40:
+
+                results.append({
+
+                    "symbol": symbol,
+
+                    "price": round(
+                        df.iloc[-1]["close"],
+                        4
+                    ),
+
+                    "rsi": round(
+                        float(last_rsi),
+                        2
+                    ),
+
+                    "score": score,
+
+                    "reversal": reversal,
+
+                    "order_block": order_block
+
+                })
 
         except Exception as e:
 
-            results.append({
+            print(symbol, e)
 
-                "symbol": symbol,
-                "price": str(e),
-                "rsi": 0,
-                "score": 0
-
-            })
+    results = sorted(
+        results,
+        key=lambda x: x["score"],
+        reverse=True
+    )
 
     return results
