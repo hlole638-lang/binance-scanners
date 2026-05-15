@@ -2,19 +2,22 @@ import requests
 
 def run_scan(interval):
 
-    results = []
-
     symbols = [
-        "BTCUSDT",
-        "ETHUSDT"
+        "BTC-USDT",
+        "ETH-USDT",
+        "BNB-USDT",
+        "SOL-USDT",
+        "XRP-USDT"
     ]
+
+    results = []
 
     for symbol in symbols:
 
         try:
 
             url = (
-                "https://api.binance.com/api/v3/ticker/price"
+                "https://api.kucoin.com/api/v1/market/orderbook/level1"
                 f"?symbol={symbol}"
             )
 
@@ -23,12 +26,18 @@ def run_scan(interval):
                 timeout=10
             )
 
+            data = response.json()
+
+            price = float(
+                data["data"]["price"]
+            )
+
             results.append({
 
                 "symbol": symbol,
-                "price": response.text,
-                "rsi": 0,
-                "score": response.status_code
+                "price": round(price, 4),
+                "rsi": 50,
+                "score": 80
 
             })
 
