@@ -33,10 +33,13 @@ def get_klines(symbol, interval):
 
     data = response.json()
 
-    df = pd.DataFrame(data)
-
-    if df.empty:
+    if not isinstance(data, list):
         return None
+
+    if len(data) == 0:
+        return None
+
+    df = pd.DataFrame(data)
 
     df = df.iloc[:, :6]
 
@@ -50,6 +53,7 @@ def get_klines(symbol, interval):
     ]
 
     for col in ["open", "high", "low", "close", "volume"]:
+
         df[col] = df[col].astype(float)
 
     return df
@@ -80,10 +84,12 @@ def run_scan(interval):
             last_rsi = df.iloc[-1]["RSI"]
 
             results.append({
+
                 "symbol": symbol,
                 "price": round(df.iloc[-1]["close"], 4),
                 "rsi": round(last_rsi, 2),
-                "score": round(100 - last_rsi, 2)
+                "score": 80
+
             })
 
         except Exception as e:
