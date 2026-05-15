@@ -2,15 +2,12 @@ import requests
 
 def run_scan(interval):
 
+    results = []
+
     symbols = [
         "BTCUSDT",
-        "ETHUSDT",
-        "BNBUSDT",
-        "SOLUSDT",
-        "XRPUSDT"
+        "ETHUSDT"
     ]
-
-    results = []
 
     for symbol in symbols:
 
@@ -26,21 +23,24 @@ def run_scan(interval):
                 timeout=10
             )
 
-            data = response.json()
-
-            price = float(data["price"])
-
             results.append({
 
                 "symbol": symbol,
-                "price": round(price, 4),
-                "rsi": 50,
-                "score": 80
+                "price": response.text,
+                "rsi": 0,
+                "score": response.status_code
 
             })
 
         except Exception as e:
 
-            print(symbol, e)
+            results.append({
+
+                "symbol": symbol,
+                "price": str(e),
+                "rsi": 0,
+                "score": 0
+
+            })
 
     return results
