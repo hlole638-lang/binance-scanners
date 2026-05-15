@@ -180,14 +180,11 @@ def run_scan(interval):
             if pd.isna(last_rsi):
                 continue
 
-            reversal =
-                bullish_reversal(df)
+            reversal = bullish_reversal(df)
 
-            order_block =
-                bullish_order_block(df)
+            order_block = bullish_order_block(df)
 
-            rsi_condition =
-                last_rsi < 32
+            rsi_condition = last_rsi < 32
 
             score = 0
 
