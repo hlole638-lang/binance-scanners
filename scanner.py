@@ -3,6 +3,8 @@ import pandas as pd
 
 BASE_URL = "https://api.kucoin.com"
 
+# ---------------- RSI ---------------- #
+
 def calculate_rsi(df, period=14):
 
     delta = df["close"].diff()
@@ -18,6 +20,8 @@ def calculate_rsi(df, period=14):
     rsi = 100 - (100 / (1 + rs))
 
     return rsi
+
+# ---------------- Get Candles ---------------- #
 
 def get_klines(symbol, timeframe):
 
@@ -59,7 +63,8 @@ def get_klines(symbol, timeframe):
             "open": float(c[1]),
             "close": float(c[2]),
             "high": float(c[3]),
-            "low": float(c[4])
+            "low": float(c[4]),
+            "volume": float(c[5])
 
         })
 
@@ -69,12 +74,82 @@ def get_klines(symbol, timeframe):
 
     return df
 
+# ---------------- Reversal Candle ---------------- #
+
+def bullish_reversal(df):
+
+    last = df.iloc[-1]
+
+    body = abs(
+        last["close"] - last["open"]
+    )
+
+    avg_body = abs(
+        df["close"] - df["open"]
+    ).rolling(3).mean().iloc[-2]
+
+    green = last["close"] > last["open"]
+
+    strong_body = body > avg_body
+
+    return green and strong_body
+
+# ---------------- Order Block ---------------- #
+
+def bullish_order_block(df):
+
+    if len(df) < 10:
+        return False
+
+    for i in range(-8, -2):
+
+        candle = df.iloc[i]
+
+        bearish = candle["close"] < candle["open"]
+
+        if not bearish:
+            continue
+
+        move = (
+            df.iloc[i + 1]["close"] -
+            candle["close"]
+        ) / candle["close"]
+
+        strong_move = move > 0.01
+
+        if strong_move:
+
+            ob_high = candle["open"]
+            ob_low = candle["low"]
+
+            current_price = df.iloc[-1]["close"]
+
+            inside_ob = (
+                ob_low <= current_price <= ob_high
+            )
+
+            if inside_ob:
+                return True
+
+    return False
+
+# ---------------- Main Scan ---------------- #
+
 def run_scan(interval):
 
     symbols = [
+
         "BTC-USDT",
         "ETH-USDT",
-        "SOL-USDT"
+        "BNB-USDT",
+        "SOL-USDT",
+        "XRP-USDT",
+        "DOGE-USDT",
+        "ADA-USDT",
+        "LINK-USDT",
+        "AVAX-USDT",
+        "DOT-USDT"
+
     ]
 
     results = []
@@ -89,33 +164,57 @@ def run_scan(interval):
             )
 
             if df is None:
+                continue
 
-                results.append({
-
-                    "symbol": symbol,
-                    "price": "NO DATA",
-                    "rsi": 0,
-                    "score": 0
-
-                })
-
+            if len(df) < 20:
                 continue
 
             df["RSI"] = calculate_rsi(df)
 
             last_rsi = df.iloc[-1]["RSI"]
 
+            if pd.isna(last_rsi):
+                continue
+
+            reversal =
+               bullish_reversal(df)
+
+            order_block =
+                bullish_order_block(df)
+
+            score = 0
+
+            # RSI
+            if last_rsi < 50:
+                score += 40
+
+            # Reversal
+            if reversal:
+                score += 30
+
+            # Order Block
+            if order_block:
+                score += 30
+
             results.append({
 
                 "symbol": symbol,
+
                 "price": round(
                     df.iloc[-1]["close"],
                     4
                 ),
 
-                "rsi": str(last_rsi),
+                "rsi": round(
+                    float(last_rsi),
+                    2
+                ),
 
-                "score": 100
+                "score": score,
+
+                "reversal": reversal,
+
+                "order_block": order_block
 
             })
 
@@ -129,5 +228,11 @@ def run_scan(interval):
                 "score": 0
 
             })
+
+    results = sorted(
+        results,
+        key=lambda x: x["score"],
+        reverse=True
+    )
 
     return results
