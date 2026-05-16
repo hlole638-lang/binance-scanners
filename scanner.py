@@ -184,7 +184,7 @@ def run_scan(interval):
 
             order_block = bullish_order_block(df)
 
-            rsi_condition = last_rsi < 32
+            rsi_condition = last_rsi < 50
 
             score = 0
 
@@ -197,7 +197,7 @@ def run_scan(interval):
             if order_block:
                 score += 30
 
-            if score >= 40:
+            if score >= 0:
 
                 results.append({
 
