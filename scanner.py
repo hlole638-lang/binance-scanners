@@ -3,7 +3,7 @@ import pandas as pd
 
 BASE_URL = "https://api.kucoin.com"
 
-# ---------------- RSI ---------------- #
+# ---------- RSI ---------- #
 
 def calculate_rsi(df, period=14):
 
@@ -21,7 +21,7 @@ def calculate_rsi(df, period=14):
 
     return rsi
 
-# ---------------- Get Candles ---------------- #
+# ---------- Candles ---------- #
 
 def get_klines(symbol, timeframe):
 
@@ -74,7 +74,7 @@ def get_klines(symbol, timeframe):
 
     return df
 
-# ---------------- Reversal Candle ---------------- #
+# ---------- Reversal Candle ---------- #
 
 def bullish_reversal(df):
 
@@ -94,7 +94,7 @@ def bullish_reversal(df):
 
     return green and strong_body
 
-# ---------------- Order Block ---------------- #
+# ---------- Order Block ---------- #
 
 def bullish_order_block(df):
 
@@ -133,7 +133,7 @@ def bullish_order_block(df):
 
     return False
 
-# ---------------- Main Scan ---------------- #
+# ---------- Main Scanner ---------- #
 
 def run_scan(interval):
 
@@ -176,23 +176,18 @@ def run_scan(interval):
             if pd.isna(last_rsi):
                 continue
 
-            reversal =
-               bullish_reversal(df)
+            reversal = bullish_reversal(df)
 
-            order_block =
-                bullish_order_block(df)
+            order_block = bullish_order_block(df)
 
             score = 0
 
-            # RSI
             if last_rsi < 50:
                 score += 40
 
-            # Reversal
             if reversal:
                 score += 30
 
-            # Order Block
             if order_block:
                 score += 30
 
@@ -201,7 +196,7 @@ def run_scan(interval):
                 "symbol": symbol,
 
                 "price": round(
-                    df.iloc[-1]["close"],
+                    float(df.iloc[-1]["close"]),
                     4
                 ),
 
